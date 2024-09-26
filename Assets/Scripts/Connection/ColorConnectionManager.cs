@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Events;
 using Player;
-using Player.ActionHandlers;
 using UnityEngine;
 
 
@@ -13,7 +12,6 @@ namespace Connection
         [SerializeField] private GameObject colorNodesContainer;
         [SerializeField] private ColorConnector colorConnector;
 
-        private ClickHandler _clickHandler;
         
         private readonly ColorConnectionHistoryHandler _historyHandler = new();
 
@@ -37,14 +35,9 @@ namespace Connection
                 _completionsByTargetNode[nodeTarget] = nodeTarget.IsCompleted;
             }
 
-            _clickHandler = ClickHandler.Instance;
-            _clickHandler.SetDragEventHandlers(OnDragStart, OnDragEnd);
         }
 
-        private void OnDestroy()
-        {
-            _clickHandler.ClearEvents();
-        }
+       
 
         private void StartConnecting(ColorNode colorNode)
         {
@@ -75,6 +68,7 @@ namespace Connection
 
         public bool TryGetColorNodeInPosition(Vector2 position, out ColorNode result)
         {
+            
             foreach (var colorNode in _nodes)
             {
                 if (!colorNode.IsInBounds(position))
@@ -113,7 +107,7 @@ namespace Connection
             _connectionsFromColorNode[mainColorNode].Remove(targetColorNode);
         }
 
-        private void OnDragStart(Vector3 startPosition)
+        public void OnDragStart(Vector3 startPosition)
         {
             if (PlayerController.PlayerState != PlayerState.Connecting)
                 return;
@@ -122,7 +116,7 @@ namespace Connection
                 StartConnecting(colorNode);
         }
 
-        private void OnDragEnd(Vector3 finishPosition)
+        public void OnDragEnd(Vector3 finishPosition)
         {
             if (PlayerController.PlayerState != PlayerState.Connecting)
                 return;
@@ -144,7 +138,15 @@ namespace Connection
 
             _currentConnectionMainNode = null;
         }
+        public void OnDrag(Vector3 position) 
+        {
+            if (PlayerController.PlayerState != PlayerState.Connecting)
+                return;
 
+            if (_currentColorConnector == null)
+                return;
+            _currentColorConnector.UpdateParameters(position);
+        }
         private void OnTargetCompletionChange(ColorNodeTarget nodeTarget, bool isCompleted)
         {
             if (!_completionsByTargetNode.ContainsKey(nodeTarget))

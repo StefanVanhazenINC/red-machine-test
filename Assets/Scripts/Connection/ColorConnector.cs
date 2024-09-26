@@ -34,13 +34,6 @@ namespace Connection
             UpdateGeometry();
         }
 
-        private void FixedUpdate()
-        {
-            if (!_isConnecting)
-                return;
-
-            UpdateParameters(CameraHolder.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition));
-        }
 
         private void UpdateGeometry()
         {
@@ -49,8 +42,11 @@ namespace Connection
             lineSpriteRenderer.size = new Vector2(_lineWidth, 1.0f);
         }
 
-        private void UpdateParameters(Vector2 secondPoint)
+        public void UpdateParameters(Vector2 secondPoint)
         {
+
+            if (!_isConnecting)
+                return;
             var distance = Vector2.Distance(secondPoint, _startPoint);
 
             CanFinishConnecting = maxLength > distance;
